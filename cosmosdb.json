@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": { "type": "string" },
+    "uniqueSuffix": { "type": "string" }
+  },
+  "variables": {
+    "cosmosAccountName": "[concat('ecom-cosmos-', parameters('uniqueSuffix'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2023-04-15",
+      "name": "[variables('cosmosAccountName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "locations": [ { "locationName": "[parameters('location')]", "failoverPriority": 0 } ]
+      }
+    }
+  ],
+  "outputs": {
+    "cosmosAccountName": {
+      "type": "string",
+      "value": "[variables('cosmosAccountName')]"
+    }
+  }
+}
