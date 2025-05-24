@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": { "type": "string" },
+    "uniqueSuffix": { "type": "string" },
+    "cosmosAccountName": { "type": "string" }
+  },
+  "variables": {
+    "appServicePlanName": "[concat('ecom-asp-', parameters('uniqueSuffix'))]",
+    "backendAppName": "[concat('ecom-be-', parameters('uniqueSuffix'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('appServicePlanName')]",
+      "location": "[parameters('location')]",
+      "sku": { "name": "B1", "tier": "Basic" }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('backendAppName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "COSMOSDB_CONNECTION_STRING",
+              "value": "[concat('AccountEndpoint=https://', parameters('cosmosAccountName'), '.documents.azure.com;AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName')), '2023-04-15').primaryMasterKey)]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
